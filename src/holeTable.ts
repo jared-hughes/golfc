@@ -84,6 +84,22 @@ export function isHole(s: string): s is Hole {
   return holeTable.hasOwnProperty(s);
 }
 
-export function getHoleName(s: Hole): string {
-  return holeTable[s]?.name ?? s;
+export function assertIsHole(s: string): asserts s is Hole {
+  if (!isHole(s)) {
+    throw new Error(`Unrecognized hole: "${s}"`);
+  }
+}
+
+export function getHoleName(s: string): string {
+  return holeTable[getHoleID(s)]?.name ?? s;
+}
+
+export function getHoleID(s: string): Hole {
+  if (isHole(s)) return s;
+  for (let holeID in holeTable) {
+    if (isHole(holeID) && holeTable[holeID].name === s) {
+      return holeID;
+    }
+  }
+  throw new Error(`Unrecognized hole: "${s}""`);
 }

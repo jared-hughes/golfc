@@ -49,6 +49,12 @@ export function isLang(s: string): s is Lang {
   return languageTable.hasOwnProperty(s);
 }
 
+export function assertIsLang(s: string): asserts s is Lang {
+  if (!isLang(s)) {
+    throw new Error(`Unrecognized hole: "${s}"`);
+  }
+}
+
 export function getLangExt(s: Lang): string {
   return languageTable[s].ext;
 }
