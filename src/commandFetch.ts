@@ -1,5 +1,5 @@
 import { assertIsLang, getLangExt, getLangName } from "./languageTable";
-import { assertIsHole, getHoleName, isHole } from "./holeTable";
+import { getHoleName } from "./holeTable";
 import { mkdir, writeFile } from "fs/promises";
 import wrappedFetch from "./wrappedFetch";
 
@@ -39,7 +39,6 @@ async function getExport() {
 
 async function applySolution(sol: Solution) {
   assertIsLang(sol.lang);
-  assertIsHole(sol.hole);
   if (sol.scoring !== "bytes" && sol.scoring !== "chars") {
     console.warn(`Unrecognized scoring: "${sol.scoring}"`);
   }

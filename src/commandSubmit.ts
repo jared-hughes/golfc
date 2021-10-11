@@ -1,6 +1,6 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
 import { assertIsLang, getLangExt } from "./languageTable";
-import { assertIsHole, getHoleID, getHoleName } from "./holeTable";
+import { getHoleID, getHoleName } from "./holeTable";
 import { mkdir, writeFile, readFile, rm } from "fs/promises";
 import path from "path";
 import wrappedFetch from "./wrappedFetch";
