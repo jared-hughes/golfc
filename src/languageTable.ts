@@ -22,6 +22,7 @@ const _languageTable = {
   nim: { ext: "nim" },
   pascal: { ext: "pas" },
   perl: { ext: "pl" },
+  prolog: { ext: "pl" },
   php: { ext: "php" },
   powershell: { ext: "ps1" },
   python: { ext: "py" },
@@ -51,7 +52,7 @@ export function isLang(s: string): s is Lang {
 
 export function assertIsLang(s: string): asserts s is Lang {
   if (!isLang(s)) {
-    throw new Error(`Unrecognized hole: "${s}"`);
+    throw new Error(`Unrecognized lang: "${s}"`);
   }
 }
 
