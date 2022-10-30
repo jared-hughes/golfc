@@ -16,7 +16,13 @@ cd golfc
 npm install
 npm run build
 # recommended: this will add the golfc script to your $PATH
-npm install -g .
+npm install . --location=global
+```
+
+To uninstall, use
+
+```
+npm uninstall golfc --location=global
 ```
 
 ## Usage
@@ -31,21 +37,19 @@ Of course, to fetch your solutions, the script needs your token.
 
 In chromium-based browsers, the token can be retrieved from `__Host-session` in `about://settings/cookies/detail?site=code.golf`.
 
-Put your token in a file named `golfc-config.json` in `~/code-golf-sols` like so:
+The easiest way to provide the token is by an environment variable like `export CODE_GOLF_TOKEN=yourtoke-n123-goes-here-0123456789abcd`.
 
-```json
-{
-  "token": "yourtoke-n123-goes-here-dontshareitout"
-}
+You could also put the token in a `.env` file like so:
+
+```
+CODE_GOLF_TOKEN=yourtoke-n123-goes-here-0123456789abcd
 ```
 
-You will have to replace the token when it expires within a month.
+Here is where I would typically say "gitignore your `.env` file," but you're not going to be publishing this directory anywhere public because it includes your (private) solutions.
 
-Here is where I would typically say "gitignore your token," but you're not going to be publishing this directory anywhere publish because it includes your (private) solutions.
+You will have to replace the token when it expires in a couple months.
 
 ### Fetch
-
-Note: if you did _not_ run `npm install -g.` in the installation steps, then use `node ~/golfc/dist/cli.js` in the below instructions instead of `golfc`.
 
 Run `golfc fetch` to fetch all solutions and insert them into folders.
 

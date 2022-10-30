@@ -1,23 +1,25 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
 import fetch, { RequestInfo, RequestInit } from "node-fetch";
-import getConfig from "./getConfig";
+import dotenv from "dotenv";
 
 export default async function wrappedFetch(
   url: RequestInfo,
   init?: RequestInit
 ) {
-  const config = await getConfig();
+  dotenv.config();
+  const token = process.env.CODE_GOLF_TOKEN;
+  if (token === undefined || token === "")
+    throw new Error("Your token is empty. Ensure that CODE_GOLF_TOKEN is set");
   const response = await fetch(url, {
     ...init,
     headers: {
       ...init?.headers,
-      cookie: `__Host-session=${config.token}; __Host-sort=points-asc`,
+      cookie: `__Host-session=${token}; __Host-sort=points-asc`,
     },
   });
   if (response.status === 403) {
     throw new Error(
-      "Error 403 on fetch request.\n" +
-        "Ensure that your token in golfc-config.json is up-to-date."
+      "Error 403 on fetch request. Ensure that your token is up-to-date."
     );
   }
   if (response.status !== 200) {
