@@ -32,7 +32,7 @@ async function main() {
       }
     )
     .command(
-      "submit <hole> <lang> [scoring]",
+      "submit <hole> <lang> <input>",
       "submit a hole in a specific language",
       (yargs) => {
         yargs
@@ -44,9 +44,9 @@ async function main() {
             describe: "language to submit",
             type: "string",
           })
-          .positional("scoring", {
-            choices: ["bytes", "chars"],
-            default: "bytes",
+          .positional("input", {
+            describe: "input file",
+            type: "string",
           });
       },
       (argv) => {

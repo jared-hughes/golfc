@@ -1,22 +1,18 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
-import { getLangExt } from "./languageTable";
-import { getHoleID, getHoleName } from "./holeTable";
+import { getHoleID } from "./holeTable";
 import { mkdir, writeFile, readFile, rm } from "fs/promises";
-import path from "path";
 import fetchWithToken from "./fetchWithToken";
 
 export interface SubmitArgs {
   hole: string;
   lang: string;
-  scoring: "bytes" | "chars";
+  input: string;
 }
 
 export default async function commandSubmit(argv: SubmitArgs) {
   const holeID = getHoleID(argv.hole);
-  console.log(
-    `Submitting hole ${holeID} in language ${argv.lang} for ${argv.scoring}...`
-  );
-  const code = await getCode(argv);
+  console.log(`Submitting hole ${holeID} in language ${argv.lang}...`);
+  const code = await readFile(argv.input, { encoding: "utf-8" });
   const response = await submitCode(code, holeID, argv.lang);
   console.log(
     response.Pass ? "Pass :)" : "Fail :(",
@@ -43,7 +39,7 @@ export default async function commandSubmit(argv: SubmitArgs) {
   await writeFile("./output/expected", response.Exp);
   await writeFile("./output/output", response.Out);
   console.log(
-    `Wrote ${response.Argv ? "argv and " : ""}output to "./output/{${
+    `Wrote response to "./output/{${
       response.Argv ? "argv, " : ""
     }expected, output}"`
   );
@@ -59,46 +55,6 @@ export default async function commandSubmit(argv: SubmitArgs) {
 
 function stringifyRanking(rank: Ranking) {
   return `${rank.Strokes} (#${rank.Rank})`;
-}
-
-async function getCode(argv: SubmitArgs) {
-  const holeID = getHoleID(argv.hole);
-  const holePath = `./src/${getHoleName(holeID)}/${argv.lang}`;
-  const infoPath = path.resolve(holePath, `${argv.scoring}.json`);
-
-  try {
-    const infoBuffer = await readFile(infoPath);
-    const infoJSON = JSON.parse(infoBuffer.toString());
-    const codePathRelative = infoJSON.file;
-    if (typeof codePathRelative !== "string") {
-      throw new Error(
-        `Expected the contents of "${infoPath}" to have a string attribute "file"`
-      );
-    }
-    const codePath = path.resolve(holePath, codePathRelative);
-    return (await readFile(codePath)).toString();
-  } catch (err) {
-    if ((err as any)?.code === "ENOENT") {
-      const fallbackPath = path.resolve(
-        holePath,
-        `${argv.scoring}.${getLangExt(argv.lang)}`
-      );
-      try {
-        console.log(
-          `Could not open "${infoPath}". Falling back to "${fallbackPath}".`
-        );
-        return (await readFile(fallbackPath)).toString();
-      } catch (err) {
-        if ((err as any)?.code === "ENOENT") {
-          throw new Error(`Could not open "${fallbackPath}". Giving up.`);
-        } else {
-          throw err;
-        }
-      }
-    } else {
-      throw err;
-    }
-  }
 }
 
 async function submitCode(code: string, hole: string, lang: string) {
