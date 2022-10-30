@@ -3,17 +3,36 @@ import { getHoleID } from "./holeTable";
 import { mkdir, writeFile, readFile, rm } from "fs/promises";
 import fetchWithToken from "./fetchWithToken";
 
-export interface SubmitArgs {
-  hole: string;
-  lang: string;
-  input: string;
-}
+export default {
+  command: "submit",
+  describe: "Submit a file to a given hole and language",
+  builder: {
+    hole: {
+      alias: "h",
+      describe: "hole to submit",
+      type: "string",
+    },
+    lang: {
+      alias: "l",
+      describe: "language to submit",
+      type: "string",
+    },
+    input: {
+      alias: "i",
+      describe: "Input file",
+      type: "string",
+      demandOption: true,
+    },
+  },
+  handler: (options: any) =>
+    commandSubmit(options.hole, options.lang, options.input),
+} as const;
 
-export default async function commandSubmit(argv: SubmitArgs) {
-  const holeID = getHoleID(argv.hole);
-  console.log(`Submitting hole ${holeID} in language ${argv.lang}...`);
-  const code = await readFile(argv.input, { encoding: "utf-8" });
-  const response = await submitCode(code, holeID, argv.lang);
+async function commandSubmit(hole: string, lang: string, inputFile: string) {
+  const holeID = getHoleID(hole);
+  console.log(`Submitting hole ${holeID} in language ${lang}...`);
+  const code = await readFile(inputFile, { encoding: "utf-8" });
+  const response = await submitCode(code, holeID, lang);
   console.log(
     response.Pass ? "Pass :)" : "Fail :(",
     `in ${(response.Took / 1_000_000).toFixed(0)}ms.`

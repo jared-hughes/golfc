@@ -3,7 +3,13 @@ import { getHoleName } from "./holeTable";
 import { mkdir, writeFile } from "fs/promises";
 import fetchWithToken from "./fetchWithToken";
 
-export default async function commandFetch() {
+export default {
+  command: "fetch",
+  describe: "fetch your solutions from code.golf servers",
+  handler: () => commandFetch(),
+} as const;
+
+async function commandFetch() {
   console.log("Fetching solutions...");
   const exported = await getExport();
   const deduped = deduplicateSolutions(exported.solutions);
