@@ -1,9 +1,9 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
-import { assertIsLang, getLangExt } from "./languageTable";
+import { getLangExt } from "./languageTable";
 import { getHoleID, getHoleName } from "./holeTable";
 import { mkdir, writeFile, readFile, rm } from "fs/promises";
 import path from "path";
-import wrappedFetch from "./wrappedFetch";
+import fetchWithToken from "./fetchWithToken";
 
 export interface SubmitArgs {
   hole: string;
@@ -62,7 +62,6 @@ function stringifyRanking(rank: Ranking) {
 }
 
 async function getCode(argv: SubmitArgs) {
-  assertIsLang(argv.lang);
   const holeID = getHoleID(argv.hole);
   const holePath = `./src/${getHoleName(holeID)}/${argv.lang}`;
   const infoPath = path.resolve(holePath, `${argv.scoring}.json`);
@@ -103,7 +102,7 @@ async function getCode(argv: SubmitArgs) {
 }
 
 async function submitCode(code: string, hole: string, lang: string) {
-  const response = await wrappedFetch("https://code.golf/solution", {
+  const response = await fetchWithToken("https://code.golf/solution", {
     body: JSON.stringify({
       Code: code,
       Hole: hole,

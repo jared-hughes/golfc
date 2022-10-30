@@ -1,7 +1,7 @@
-import { assertIsLang, getLangExt, getLangName } from "./languageTable";
+import { getLangExt, getLangName } from "./languageTable";
 import { getHoleName } from "./holeTable";
 import { mkdir, writeFile } from "fs/promises";
-import wrappedFetch from "./wrappedFetch";
+import fetchWithToken from "./fetchWithToken";
 
 export default async function commandFetch() {
   console.log("Fetching solutions...");
@@ -30,7 +30,7 @@ function deduplicateSolutions(sols: Solution[]) {
 }
 
 async function getExport() {
-  const response = await wrappedFetch("https://code.golf/golfer/export", {
+  const response = await fetchWithToken("https://code.golf/golfer/export", {
     body: null,
     method: "GET",
   });
@@ -38,7 +38,6 @@ async function getExport() {
 }
 
 async function applySolution(sol: Solution) {
-  assertIsLang(sol.lang);
   if (sol.scoring !== "bytes" && sol.scoring !== "chars") {
     console.warn(`Unrecognized scoring: "${sol.scoring}"`);
   }

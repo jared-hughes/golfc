@@ -2,7 +2,7 @@
 import fetch, { RequestInfo, RequestInit } from "node-fetch";
 import dotenv from "dotenv";
 
-export default async function wrappedFetch(
+export default async function fetchWithToken(
   url: RequestInfo,
   init?: RequestInit
 ) {
