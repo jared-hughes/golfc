@@ -28,7 +28,7 @@ const extTable: Record<string, string> = {
   nim: "nim",
   pascal: "pas",
   perl: "pl",
-  prolog: "pl",
+  prolog: "pro",
   php: "php",
   powershell: "ps1",
   python: "py",
