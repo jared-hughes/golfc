@@ -47,8 +47,11 @@ async function applySolution(sol: Solution) {
   if (sol.scoring !== "bytes" && sol.scoring !== "chars") {
     console.warn(`Unrecognized scoring: "${sol.scoring}"`);
   }
-  const dir = `./sols/${getHoleName(sol.hole)}/${getLangName(sol.lang)}/`;
-  const filename = `${dir}/${sol.scoring}.${getLangExt(sol.lang)}`;
+  const hole = getHoleName(sol.hole);
+  const dir = `./sols/${hole}/`;
+  const lang = getLangName(sol.lang);
+  const suffix = sol.scoring === "chars" ? "-chars" : "";
+  const filename = `${dir}/${hole}-${lang}${suffix}.${getLangExt(sol.lang)}`;
   try {
     await mkdir(dir, { recursive: true });
     await writeFile(filename, sol.code);
