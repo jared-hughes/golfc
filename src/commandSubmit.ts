@@ -64,16 +64,16 @@ async function commandSubmit(hole: string, lang: string, inputFile: string) {
   );
   response.RankUpdates.forEach(
     (update) =>
-      update.Beat !== null &&
+      update.beat !== null &&
       console.log(
-        `${update.Scoring}:`,
-        `${stringifyRanking(update.From)} → ${stringifyRanking(update.To)}`
+        `${update.scoring}:`,
+        `${stringifyRanking(update.from)} → ${stringifyRanking(update.to)}`
       )
   );
 }
 
 function stringifyRanking(rank: Ranking) {
-  return `${rank.Strokes} (#${rank.Rank})`;
+  return `${rank.strokes} (#${rank.rank})`;
 }
 
 async function submitCode(code: string, hole: string, lang: string) {
@@ -95,21 +95,21 @@ interface SolutionResponse {
   ExitCode: number;
   Pass: boolean;
   RankUpdates: [
-    RankUpdate & { Scoring: "bytes" },
-    RankUpdate & { Scoring: "chars" }
+    RankUpdate & { scoring: "bytes" },
+    RankUpdate & { scoring: "chars" }
   ];
   Took: number;
 }
 
 interface Ranking {
-  Joint: boolean | null;
-  Rank: number | null;
-  Strokes: number | null;
+  joint: boolean | null;
+  rank: number | null;
+  strokes: number | null;
 }
 
 interface RankUpdate {
-  Scoring: string;
-  From: Ranking;
-  To: Ranking;
-  Beat: number | null;
+  scoring: string;
+  from: Ranking;
+  to: Ranking;
+  beat: number | null;
 }
