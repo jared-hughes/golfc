@@ -11,6 +11,7 @@ const holeTable = {
   φ: { name: "phi" },
   "√2": { name: "sqrt2" },
   "𝑒": { name: "e" },
+  γ: { name: "gamma" },
 } as {
   [K: string]: {
     name?: string;
