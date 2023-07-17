@@ -57,10 +57,11 @@ async function commandSubmit(hole: string, lang: string, inputFile: string) {
   }
   await writeFile("./output/expected", response.Exp);
   await writeFile("./output/output", response.Out);
+  await writeFile("./output/errors", response.Err);
   console.log(
     `Wrote response to "./output/{${
       response.Argv ? "argv, " : ""
-    }expected, output}"`
+    }expected, output, errors}"`
   );
   response.RankUpdates.forEach(
     (update) =>
@@ -92,6 +93,7 @@ interface SolutionResponse {
   Argv?: string[];
   Exp: string;
   Out: string;
+  Err: string;
   ExitCode: number;
   Pass: boolean;
   RankUpdates: [
