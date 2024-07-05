@@ -4,7 +4,7 @@
   "description": "CLI for managing code.golf solutions",
   "main": "dist/cli.js",
   "bin": {
-    "golfc": "./dist/cli.js"
+    "golfc": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc --build",
