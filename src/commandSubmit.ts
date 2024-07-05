@@ -1,7 +1,8 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
 import { getHoleID } from "./holeTable";
-import { mkdir, writeFile, readFile, rm } from "fs/promises";
+import * as fs from "fs/promises";
 import fetchWithToken from "./fetchWithToken";
+import path from "path";
 
 export default {
   command: "submit",
@@ -28,49 +29,90 @@ export default {
     commandSubmit(options.hole, options.lang, options.input),
 } as const;
 
+function ns_to_ms_str(n: number): string {
+  return `${(n / 1_000_000).toFixed(0)}ms`;
+}
+
 async function commandSubmit(hole: string, lang: string, inputFile: string) {
   const holeID = getHoleID(hole);
   console.log(`Submitting hole ${holeID} in language ${lang}...`);
-  const code = await readFile(inputFile, { encoding: "utf-8" });
+  const code = await fs.readFile(inputFile, { encoding: "utf-8" });
   const response = await submitCode(code, holeID, lang);
-  console.log(
-    response.Pass ? "Pass :)" : "Fail :(",
-    `in ${(response.Took / 1_000_000).toFixed(0)}ms.`
-  );
-  if (response.ExitCode !== 0) {
-    console.log(`Error: Exit status ${response.ExitCode}`);
-  }
-  try {
-    await mkdir("./output");
-  } catch (err) {
-    // ignore ./output being already present
-    if ((err as any)?.code !== "EEXIST") throw err;
-  }
-  if (response.Argv && response.Argv.length > 0) {
-    await writeFile("./output/argv", response.Argv.join("\n") + "\n");
+  const { rank_updates, runs } = response;
+  let pass = runs.every((r) => r.pass);
+
+  if (pass) {
+    console.log(
+      "Pass :)",
+      `in ${runs.map((run) => ns_to_ms_str(run.time_ns)).join(", ")}.`
+    );
   } else {
-    try {
-      await rm("./output/argv");
-    } catch {
-      // if we can't delete the file, doesn't really matter
+    let all_fail = runs.every((r) => !r.pass);
+    console.log(
+      "Fail :(",
+      `in ${runs
+        .map((run) => {
+          let s = ns_to_ms_str(run.time_ns);
+          if (run.timeout) s += " (timeout)";
+          if (!all_fail) s += run.pass ? " (pass)" : " (fail)";
+          return s;
+        })
+        .join(", ")}.`
+    );
+  }
+  // Clear existing `run-` directories
+  for (const filename of await fs.readdir("./output")) {
+    const match = filename.match(/run-(\d+)/);
+    if (!match) continue;
+    if (!(parseInt(match[1]) < runs.length)) {
+      await fs.rm(path.join("./output", filename), { recursive: true });
     }
   }
-  await writeFile("./output/expected", response.Exp);
-  await writeFile("./output/output", response.Out);
-  await writeFile("./output/errors", response.Err);
-  console.log(
-    `Wrote response to "./output/{${
-      response.Argv ? "argv, " : ""
-    }expected, output, errors}"`
-  );
-  response.RankUpdates.forEach(
+  write_run_files("./output", runs[default_run_index(runs)]);
+  for (let i = 0; i < runs.length; i++) {
+    write_run_files(`./output/run-${i}`, runs[i]);
+  }
+  console.log(`Wrote response to "./output"`);
+  response.rank_updates.forEach(
     (update) =>
-      update.beat !== null &&
+      (update.to.strokes ?? 0) > (update.from.strokes ?? 0) &&
       console.log(
         `${update.scoring}:`,
         `${stringifyRanking(update.from)} → ${stringifyRanking(update.to)}`
       )
   );
+}
+
+async function write_run_files(dir: string, run: Run) {
+  try {
+    await fs.mkdir(dir, { recursive: true });
+  } catch (err) {
+    // ignore ./output being already present
+    if ((err as any)?.code !== "EEXIST") throw err;
+  }
+  let j = (filename: string) => path.join(dir, filename);
+  await fs.writeFile(j("./expected"), run.answer);
+  await fs.writeFile(j("./output"), run.stdout);
+  await fs.writeFile(j("./errors"), run.stderr);
+  const argv = j("./argv");
+  if (run.args && run.args.length > 0) {
+    await fs.writeFile(argv, run.args.join("\n") + "\n");
+  } else {
+    try {
+      await fs.rm(argv);
+    } catch {
+      // if we can't delete the file, doesn't really matter
+    }
+  }
+}
+
+// Default run: first failing non-timeout, else first timeout, else last overall.
+function default_run_index(runs: Run[]) {
+  let i = runs.findIndex((run) => !run.pass && !run.timeout);
+  if (i !== -1) return i;
+  i = runs.findIndex((run) => !run.pass);
+  if (i !== -1) return i;
+  return runs.length - 1;
 }
 
 function stringifyRanking(rank: Ranking) {
@@ -90,17 +132,22 @@ async function submitCode(code: string, hole: string, lang: string) {
 }
 
 interface SolutionResponse {
-  Argv?: string[];
-  Exp: string;
-  Out: string;
-  Err: string;
-  ExitCode: number;
-  Pass: boolean;
-  RankUpdates: [
+  rank_updates: [
     RankUpdate & { scoring: "bytes" },
     RankUpdate & { scoring: "chars" }
   ];
-  Took: number;
+  runs: Run[];
+}
+
+interface Run {
+  answer: string;
+  args: string[];
+  exit_code: number;
+  pass: boolean;
+  stderr: string;
+  stdout: string;
+  time_ns: number;
+  timeout: boolean;
 }
 
 interface Ranking {
@@ -113,5 +160,4 @@ interface RankUpdate {
   scoring: string;
   from: Ranking;
   to: Ranking;
-  beat: number | null;
 }
