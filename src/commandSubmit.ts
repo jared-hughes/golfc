@@ -73,14 +73,28 @@ async function commandSubmit(hole: string, lang: string, inputFile: string) {
     write_run_files(`./output/run-${i}`, runs[i]);
   }
   console.log(`Wrote response to "./output"`);
-  response.rank_updates.forEach(
-    (update) =>
-      (update.to.strokes ?? 0) > (update.from.strokes ?? 0) &&
+  if (pass) {
+    logUpdates(rank_updates);
+  }
+}
+
+function logUpdates(updates: RankUpdate[]) {
+  for (const update of updates) {
+    let to = update.to.strokes ?? -Infinity;
+    let from = update.from.strokes ?? Infinity;
+    if (to < from)
       console.log(
         `${update.scoring}:`,
         `${stringifyRanking(update.from)} → ${stringifyRanking(update.to)}`
-      )
-  );
+      );
+    else if (to === from) {
+      console.log(
+        `${update.scoring}:`,
+        stringifyRanking(update.to),
+        ` (no change)`
+      );
+    }
+  }
 }
 
 async function write_run_files(dir: string, run: Run) {
