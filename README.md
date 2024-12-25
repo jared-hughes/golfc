@@ -65,4 +65,4 @@ This command will overwrite files, so be careful. You might want to use a (local
 
 Run `golfc submit -h fibonacci -l python -i somedir/fibonacci.py` to submit your solution at `somedir/fibonacci.py` as python code to the Fibonacci hole.
 
-This command might only overwrite files in the `output/` directory.
+Output, including stdout, stderr, and error messages, will be placed in the `./output/` directory. The `./output/` directory is created if it doesn't already exist.

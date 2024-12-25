@@ -6,7 +6,8 @@ import path from "path";
 
 export default {
   command: "submit",
-  describe: "Submit a file to a given hole and language",
+  describe:
+    "Submit a file to a given hole and language, putting output in the ./output directory.",
   builder: {
     hole: {
       alias: "h",
@@ -76,6 +77,7 @@ async function commandSubmit(opts: SubmitOpts, inputFile: string) {
     );
   }
   // Clear existing `run-` directories
+  await fs.mkdir("./output", { recursive: true });
   for (const filename of await fs.readdir("./output")) {
     const match = filename.match(/run-(\d+)/);
     if (!match) continue;
