@@ -65,4 +65,6 @@ This command will overwrite files, so be careful. You might want to use a (local
 
 Run `golfc submit -h fibonacci -l python -i somedir/fibonacci.py` to submit your solution at `somedir/fibonacci.py` as python code to the Fibonacci hole.
 
-Output, including stdout, stderr, and error messages, will be placed in the `./output/` directory. The `./output/` directory is created if it doesn't already exist.
+Pass `--no-auth` to remove the need for an auth token. Submission will be anonymous, as if you aren't logged into the site.
+
+Output, including stdout, stderr, and error messages, will be placed in the `./output/` directory by default. The `./output/` directory is created if it doesn't already exist. To output to a different directory, specify `-o output-dir`.

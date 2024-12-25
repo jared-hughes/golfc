@@ -1,4 +1,3 @@
-// node-fetch@3.0.0-beta.9 is required for commonjs imports
 import { getHoleID } from "./holeTable";
 import * as fs from "fs/promises";
 import fetchWithToken, { fetchWithoutToken } from "./fetchWithToken";
@@ -7,7 +6,7 @@ import path from "path";
 export default {
   command: "submit",
   describe:
-    "Submit a file to a given hole and language, putting output in the ./output directory.",
+    "Submit a file to a given hole and language, putting output in the --output directory.",
   builder: {
     hole: {
       alias: "h",
@@ -25,16 +24,27 @@ export default {
       type: "string",
       demandOption: true,
     },
+    output: {
+      alias: "o",
+      describe: "Output directory, or output file if --singleFile is specified",
+      type: "string",
+      default: "./output",
+    },
     auth: {
       alias: "a",
-      describe: "Autheticate. Use --no-auth to submit unauthenticated.",
+      describe: "Authenticate. Use --no-auth to submit unauthenticated.",
       type: "boolean",
       default: true,
     },
   },
   handler: (options: any) =>
     commandSubmit(
-      { hole: options.hole, lang: options.lang, auth: !!options.auth },
+      {
+        hole: options.hole,
+        lang: options.lang,
+        auth: !!options.auth,
+        output: options.output,
+      },
       options.input
     ),
 } as const;
@@ -43,6 +53,7 @@ interface SubmitOpts {
   hole: string;
   lang: string;
   auth: boolean;
+  output: string;
 }
 
 function ns_to_ms_str(n: number): string {
@@ -76,23 +87,27 @@ async function commandSubmit(opts: SubmitOpts, inputFile: string) {
         .join(", ")}.`
     );
   }
-  // Clear existing `run-` directories
-  await fs.mkdir("./output", { recursive: true });
-  for (const filename of await fs.readdir("./output")) {
-    const match = filename.match(/run-(\d+)/);
-    if (!match) continue;
-    if (!(parseInt(match[1]) < runs.length)) {
-      await fs.rm(path.join("./output", filename), { recursive: true });
-    }
-  }
-  write_run_files("./output", runs[default_run_index(runs)]);
-  for (let i = 0; i < runs.length; i++) {
-    write_run_files(`./output/run-${i}`, runs[i]);
-  }
-  console.log(`Wrote response to "./output"`);
+  await writeIntoOutputDir(opts.output, runs);
   if (pass) {
     logUpdates(rank_updates);
   }
+}
+
+async function writeIntoOutputDir(output: string, runs: Run[]) {
+  await fs.mkdir(output, { recursive: true });
+  // Clear existing `run-` directories
+  for (const filename of await fs.readdir(output)) {
+    const match = filename.match(/run-(\d+)/);
+    if (!match) continue;
+    if (!(parseInt(match[1]) < runs.length)) {
+      await fs.rm(path.join(output, filename), { recursive: true });
+    }
+  }
+  write_run_files(output, runs[default_run_index(runs)]);
+  for (let i = 0; i < runs.length; i++) {
+    write_run_files(path.join(output, `run-${i}`), runs[i]);
+  }
+  console.log(`Wrote response to output`);
 }
 
 function logUpdates(updates: RankUpdate[]) {
@@ -115,12 +130,7 @@ function logUpdates(updates: RankUpdate[]) {
 }
 
 async function write_run_files(dir: string, run: Run) {
-  try {
-    await fs.mkdir(dir, { recursive: true });
-  } catch (err) {
-    // ignore ./output being already present
-    if ((err as any)?.code !== "EEXIST") throw err;
-  }
+  await fs.mkdir(dir, { recursive: true });
   let j = (filename: string) => path.join(dir, filename);
   await fs.writeFile(j("./expected"), run.answer);
   await fs.writeFile(j("./output"), run.stdout);
