@@ -26,18 +26,23 @@ export default {
     },
   },
   handler: (options: any) =>
-    commandSubmit(options.hole, options.lang, options.input),
+    commandSubmit({ hole: options.hole, lang: options.lang }, options.input),
 } as const;
+
+interface SubmitOpts {
+  hole: string;
+  lang: string;
+}
 
 function ns_to_ms_str(n: number): string {
   return `${(n / 1_000_000).toFixed(0)}ms`;
 }
 
-async function commandSubmit(hole: string, lang: string, inputFile: string) {
-  const holeID = getHoleID(hole);
-  console.log(`Submitting hole ${holeID} in language ${lang}...`);
+async function commandSubmit(opts: SubmitOpts, inputFile: string) {
+  const holeID = getHoleID(opts.hole);
+  console.log(`Submitting hole ${holeID} in language ${opts.lang}...`);
   const code = await fs.readFile(inputFile, { encoding: "utf-8" });
-  const response = await submitCode(code, holeID, lang);
+  const response = await submitCode(code, opts);
   const { rank_updates, runs } = response;
   let pass = runs.every((r) => r.pass);
 
@@ -133,12 +138,12 @@ function stringifyRanking(rank: Ranking) {
   return `${rank.strokes} (#${rank.rank})`;
 }
 
-async function submitCode(code: string, hole: string, lang: string) {
+async function submitCode(code: string, opts: SubmitOpts) {
   const response = await fetchWithToken("https://code.golf/solution", {
     body: JSON.stringify({
       Code: code,
-      Hole: hole,
-      Lang: lang,
+      Hole: opts.hole,
+      Lang: opts.lang,
     }),
     method: "POST",
   });
