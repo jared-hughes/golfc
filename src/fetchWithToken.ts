@@ -29,3 +29,13 @@ export default async function fetchWithToken(
   }
   return response;
 }
+
+export async function fetchWithoutToken(url: RequestInfo, init?: RequestInit) {
+  const response = await fetch(url, init);
+  if (response.status !== 200) {
+    throw new Error(
+      `Error in a web request to ${url}. Status code ${response.status}.`
+    );
+  }
+  return response;
+}

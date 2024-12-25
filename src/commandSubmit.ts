@@ -1,7 +1,7 @@
 // node-fetch@3.0.0-beta.9 is required for commonjs imports
 import { getHoleID } from "./holeTable";
 import * as fs from "fs/promises";
-import fetchWithToken from "./fetchWithToken";
+import fetchWithToken, { fetchWithoutToken } from "./fetchWithToken";
 import path from "path";
 
 export default {
@@ -24,14 +24,24 @@ export default {
       type: "string",
       demandOption: true,
     },
+    auth: {
+      alias: "a",
+      describe: "Autheticate. Use --no-auth to submit unauthenticated.",
+      type: "boolean",
+      default: true,
+    },
   },
   handler: (options: any) =>
-    commandSubmit({ hole: options.hole, lang: options.lang }, options.input),
+    commandSubmit(
+      { hole: options.hole, lang: options.lang, auth: !!options.auth },
+      options.input
+    ),
 } as const;
 
 interface SubmitOpts {
   hole: string;
   lang: string;
+  auth: boolean;
 }
 
 function ns_to_ms_str(n: number): string {
@@ -139,14 +149,18 @@ function stringifyRanking(rank: Ranking) {
 }
 
 async function submitCode(code: string, opts: SubmitOpts) {
-  const response = await fetchWithToken("https://code.golf/solution", {
+  const url = "https://code.golf/solution";
+  const init = {
     body: JSON.stringify({
       Code: code,
       Hole: opts.hole,
       Lang: opts.lang,
     }),
     method: "POST",
-  });
+  };
+  const response = await (opts.auth
+    ? fetchWithToken(url, init)
+    : fetchWithoutToken(url, init));
   return (await response.json()) as SolutionResponse;
 }
 
