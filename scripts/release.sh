@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if (($# != 1)); then
-    echo "Expected one arg, e.g. ./scripts.release.sh 0.12.3"
+    echo "Expected one arg, e.g. ./scripts/release.sh 0.12.3"
     exit 1
 fi
 
@@ -21,7 +21,7 @@ npm --no-git-tag-version version "$version"
 git add -A
 git commit -m "Prepare v$version"
 
-echo "Building for Chrome"
+echo "Building"
 rm -rf dist
 npm run build
 
