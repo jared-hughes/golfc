@@ -164,9 +164,9 @@ async function submitCode(code: string, opts: SubmitOpts) {
   const url = "https://code.golf/solution";
   const init = {
     body: JSON.stringify({
-      Code: code,
-      Hole: opts.hole,
-      Lang: opts.lang,
+      code: code,
+      hole: opts.hole,
+      lang: opts.lang,
     }),
     method: "POST",
   };
