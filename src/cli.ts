@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import commandFetch from "./commandFetch";
 import commandSubmit from "./commandSubmit";
 
-yargs
+yargs(hideBin(process.argv))
   .usage("$0 command")
   .command(commandFetch)
   .command(commandSubmit)
