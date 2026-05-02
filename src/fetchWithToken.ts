@@ -1,10 +1,35 @@
-import dotenv from "dotenv";
+import * as fs from "fs/promises";
+
+async function getTokenFromDotEnv() {
+  try {
+    const env = await fs.readFile(".env", { encoding: "utf-8" });
+    const lines = env.split("\n");
+    const prefix = "CODE_GOLF_TOKEN=";
+    const tokenLines = lines.filter((line) => line.startsWith(prefix));
+    if (tokenLines.length > 1) {
+      console.error("More than one CODE_GOLF_TOKEN in .env. Giving up.");
+      process.exit(1);
+    }
+    if (tokenLines.length == 0) {
+      return undefined;
+    }
+    console.error("Using token from .env.");
+    const token = tokenLines[0].slice(prefix.length);
+    return token;
+  } catch (_) {
+    return undefined;
+  }
+}
 
 export default async function fetchWithToken(url: string, init?: RequestInit) {
-  dotenv.config();
-  const token = process.env.CODE_GOLF_TOKEN;
-  if (token === undefined || token === "")
-    throw new Error("Your token is empty. Ensure that CODE_GOLF_TOKEN is set");
+  const token =
+    (await getTokenFromDotEnv()) ??
+    (console.error("Using token from environment"),
+    process.env.CODE_GOLF_TOKEN);
+  if (token === undefined || token === "") {
+    console.error("Your token is empty. Ensure that CODE_GOLF_TOKEN is set.");
+    process.exit(1);
+  }
   const response = await fetch(url, {
     ...init,
     headers: {
