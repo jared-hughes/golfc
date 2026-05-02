@@ -1,5 +1,7 @@
 const extTable: Record<string, string> = {
+  "05ab1e": "abe",
   fish: "fish",
+  apl: "apl",
   assembly: "asm",
   awk: "awk",
   bash: "bash",
@@ -9,6 +11,7 @@ const extTable: Record<string, string> = {
   cpp: "cpp",
   "c-sharp": "cs",
   cobol: "cbl",
+  coconut: "coco",
   crystal: "cr",
   d: "d",
   dart: "dart",
@@ -25,6 +28,7 @@ const extTable: Record<string, string> = {
   java: "java",
   javascript: "js",
   julia: "jl",
+  jq: "jq",
   k: "k",
   lisp: "lisp",
   lua: "lua",
@@ -56,7 +60,7 @@ export function getLangExt(s: string): string {
   if (extTable[s] !== undefined) return extTable[s];
   const fileExt = s.slice(0, 3);
   console.warn(
-    `Unrecognized language "${s}". Assuming file extension is ${fileExt}`
+    `Unrecognized language "${s}". Assuming file extension is ${fileExt}`,
   );
   return fileExt;
 }
