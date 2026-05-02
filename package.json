@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "dotenv": "17.2.3",
-    "node-fetch": "3.3.2",
     "yargs": "17.1.1"
   }
 }

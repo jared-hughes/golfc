@@ -1,11 +1,6 @@
-// node-fetch@3.0.0-beta.9 is required for commonjs imports
-import fetch, { RequestInfo, RequestInit } from "node-fetch";
 import dotenv from "dotenv";
 
-export default async function fetchWithToken(
-  url: RequestInfo,
-  init?: RequestInit
-) {
+export default async function fetchWithToken(url: string, init?: RequestInit) {
   dotenv.config();
   const token = process.env.CODE_GOLF_TOKEN;
   if (token === undefined || token === "")
@@ -19,22 +14,22 @@ export default async function fetchWithToken(
   });
   if (response.status === 403) {
     throw new Error(
-      "Error 403 on fetch request. Ensure that your token is up-to-date."
+      "Error 403 on fetch request. Ensure that your token is up-to-date.",
     );
   }
   if (response.status !== 200) {
     throw new Error(
-      `Error in a web request to ${url}. Status code ${response.status}.`
+      `Error in a web request to ${url}. Status code ${response.status}.`,
     );
   }
   return response;
 }
 
-export async function fetchWithoutToken(url: RequestInfo, init?: RequestInit) {
+export async function fetchWithoutToken(url: string, init?: RequestInit) {
   const response = await fetch(url, init);
   if (response.status !== 200) {
     throw new Error(
-      `Error in a web request to ${url}. Status code ${response.status}.`
+      `Error in a web request to ${url}. Status code ${response.status}.`,
     );
   }
   return response;
