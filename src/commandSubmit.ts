@@ -2,6 +2,7 @@ import { getHoleID } from "./holeTable";
 import * as fs from "fs/promises";
 import fetchWithToken, { fetchWithoutToken } from "./fetchWithToken";
 import path from "path";
+import htmlEntities from "he";
 
 export default {
   command: "submit",
@@ -45,7 +46,7 @@ export default {
         auth: !!options.auth,
         output: options.output,
       },
-      options.input
+      options.input,
     ),
 } as const;
 
@@ -71,7 +72,7 @@ async function commandSubmit(opts: SubmitOpts, inputFile: string) {
   if (pass) {
     console.log(
       "Pass :)",
-      `in ${runs.map((run) => ns_to_ms_str(run.time_ns)).join(", ")}.`
+      `in ${runs.map((run) => ns_to_ms_str(run.time_ns)).join(", ")}.`,
     );
   } else {
     let all_fail = runs.every((r) => !r.pass);
@@ -84,7 +85,7 @@ async function commandSubmit(opts: SubmitOpts, inputFile: string) {
           if (!all_fail) s += run.pass ? " (pass)" : " (fail)";
           return s;
         })
-        .join(", ")}.`
+        .join(", ")}.`,
     );
   }
   await writeIntoOutputDir(opts.output, runs);
@@ -117,13 +118,13 @@ function logUpdates(updates: RankUpdate[]) {
     if (to < from)
       console.log(
         `${update.scoring}:`,
-        `${stringifyRanking(update.from)} → ${stringifyRanking(update.to)}`
+        `${stringifyRanking(update.from)} → ${stringifyRanking(update.to)}`,
       );
     else if (to === from) {
       console.log(
         `${update.scoring}:`,
         stringifyRanking(update.to),
-        ` (no change)`
+        ` (no change)`,
       );
     }
   }
@@ -134,7 +135,8 @@ async function write_run_files(dir: string, run: Run) {
   let j = (filename: string) => path.join(dir, filename);
   await fs.writeFile(j("./expected"), run.answer);
   await fs.writeFile(j("./output"), run.stdout);
-  await fs.writeFile(j("./errors"), run.stderr);
+  const stderr = htmlEntities.decode(run.stderr);
+  await fs.writeFile(j("./errors"), stderr);
   const argv = j("./argv");
   if (run.args && run.args.length > 0) {
     await fs.writeFile(argv, run.args.join("\n") + "\n");
@@ -179,7 +181,7 @@ async function submitCode(code: string, opts: SubmitOpts) {
 interface SolutionResponse {
   rank_updates: [
     RankUpdate & { scoring: "bytes" },
-    RankUpdate & { scoring: "chars" }
+    RankUpdate & { scoring: "chars" },
   ];
   runs: Run[];
 }
